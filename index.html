@@ -375,6 +375,33 @@
     }
 
     .sig-actions-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+
+    /* CLEAN PRINT STYLING */
+    @media print {
+      body {
+        height: auto !important;
+        width: auto !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+      }
+      .app-toolbar, #status-banner, .signature-modal-backdrop, .empty-state-card, #btn-open-label {
+        display: none !important;
+      }
+      .pdf-scroll-viewport {
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        gap: 0 !important;
+      }
+      .page-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 auto !important;
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -420,7 +447,7 @@
         <button class="btn-white" onclick="changeZoom(-0.15)">-</button>
         <span id="zoom-value" style="font-weight:700; font-size:0.78rem;">100%</span>
         <button class="btn-white" onclick="changeZoom(0.15)">+</button>
-        <button class="btn-white" onclick="window.print()">PRINT</button>
+        <button class="btn-white" onclick="printOfficialPDF()">PRINT</button>
         <button class="btn-white" onclick="resetFormInputs()">CLEAR</button>
       </div>
     </div>
@@ -876,6 +903,18 @@ const FT01_FORM_PAGES = {
       }
     }
 
+    function clearFormStateOnly() {
+      formState = {
+        checkboxes: {},
+        tableGrades: {},
+        textValues: {},
+        signatures: {},
+        universalMarks: [],
+        universalTexts: [],
+        universalSigs: []
+      };
+    }
+
     function showEmptyState() {
       currentBuffer = null;
       pdfDocument = null;
@@ -930,7 +969,6 @@ const FT01_FORM_PAGES = {
 
     window.addEventListener('DOMContentLoaded', () => {
       initSignatureCanvas();
-      // Start with clean empty state: No PDF loaded by default until user opens one!
       showEmptyState();
     });
 
@@ -939,16 +977,18 @@ const FT01_FORM_PAGES = {
         let uint8Data;
         if (input instanceof Uint8Array) {
           uint8Data = input;
-          currentBuffer = input.buffer;
+          // Store cloned copy to prevent detachment
+          currentBuffer = input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength);
         } else if (input instanceof ArrayBuffer) {
           uint8Data = new Uint8Array(input);
-          currentBuffer = input;
+          // Clone the arrayBuffer so it remains in memory forever
+          currentBuffer = input.slice(0);
         } else {
           throw new Error("Invalid PDF data type");
         }
 
-        // Reset state for new document
-        resetFormInputs();
+        // Reset form data without resetting currentBuffer
+        clearFormStateOnly();
 
         const doc = await pdfjsLib.getDocument({ data: uint8Data }).promise;
         pdfDocument = doc;
@@ -1404,10 +1444,7 @@ const FT01_FORM_PAGES = {
     }
 
     function resetFormInputs() {
-      formState = {
-        checkboxes: {}, tableGrades: {}, textValues: {}, signatures: {},
-        universalMarks: [], universalTexts: [], universalSigs: []
-      };
+      clearFormStateOnly();
       if (!pdfDocument) {
         showEmptyState();
         return;
@@ -1430,6 +1467,157 @@ const FT01_FORM_PAGES = {
       renderAllPages();
     }
 
+    async function generateFinalPdfBytes() {
+      if (!currentBuffer) {
+        throw new Error("No PDF document currently loaded.");
+      }
+      
+      // Clone buffer copy as Uint8Array so PDFLib can read it safely without lock
+      const bufferCopy = new Uint8Array(currentBuffer.slice(0));
+      const pdf = await PDFLib.PDFDocument.load(bufferCopy);
+      const pages = pdf.getPages();
+      const BLACK = PDFLib.rgb(0, 0, 0);
+
+      async function embedSig(page, dataUrl, x, y, w, h) {
+        try {
+          const pngImage = await pdf.embedPng(dataUrl);
+          page.drawImage(pngImage, { x, y, width: w, height: h });
+        } catch (e) {
+          console.error("Signature embed error:", e);
+        }
+      }
+
+      if (isCurrentDocFT01 && typeof FT01_FORM_PAGES !== 'undefined') {
+        for (let pNum = 1; pNum <= pages.length; pNum++) {
+          const pDef = FT01_FORM_PAGES[pNum];
+          if (!pDef) continue;
+          const page = pages[pNum - 1];
+
+          if (pDef.checkboxes) {
+            pDef.checkboxes.forEach(b => {
+              if (formState.checkboxes[b.id]) {
+                page.drawText('X', {
+                  x: b.x + (b.w / 2) - 4,
+                  y: b.y + (b.h / 2) - 4,
+                  size: 11,
+                  color: BLACK
+                });
+              }
+            });
+          }
+
+          if (pDef.textFields) {
+            pDef.textFields.forEach(f => {
+              const val = formState.textValues[f.id];
+              if (val) {
+                page.drawText(val, {
+                  x: f.x + 2,
+                  y: f.y + (f.isTextarea ? f.h - 10 : 2),
+                  size: 9.5,
+                  color: BLACK
+                });
+              }
+            });
+          }
+
+          if (pDef.rows && pDef.tableCols) {
+            pDef.rows.forEach(row => {
+              const grade = formState.tableGrades[row.code];
+              if (grade) {
+                const col = pDef.tableCols.find(c => c.name === grade);
+                if (col) {
+                  page.drawText(grade, {
+                    x: col.x + (col.w / 2) - (grade.length > 1 ? 5 : 3),
+                    y: row.y + (row.h / 2) - 3,
+                    size: grade.length > 2 ? 6.5 : 8,
+                    color: BLACK
+                  });
+                }
+              }
+            });
+          }
+
+          if (pDef.comportementRows && pDef.comportementCols) {
+            pDef.comportementRows.forEach(row => {
+              const grade = formState.tableGrades[row.code];
+              if (grade) {
+                const col = pDef.comportementCols.find(c => c.name === grade);
+                if (col) {
+                  page.drawText(grade, {
+                    x: col.x + (col.w / 2) - 3,
+                    y: row.y + (row.h / 2) - 3,
+                    size: 7.5,
+                    color: BLACK
+                  });
+                }
+              }
+            });
+          }
+
+          if (pDef.crmRows && pDef.crmCols) {
+            pDef.crmRows.forEach(row => {
+              const grade = formState.tableGrades['CRM_' + row.code];
+              if (grade) {
+                const col = pDef.crmCols.find(c => c.name === grade);
+                if (col) {
+                  page.drawText(grade, {
+                    x: col.x + (col.w / 2) - 3,
+                    y: row.y + (row.h / 2) - 3,
+                    size: 8,
+                    color: BLACK
+                  });
+                }
+              }
+            });
+          }
+
+          if (pDef.signatures) {
+            for (const s of pDef.signatures) {
+              if (formState.signatures[s.id]) {
+                await embedSig(page, formState.signatures[s.id], s.x, s.y, s.w, s.h);
+              }
+            }
+          }
+        }
+      }
+
+      for (const m of formState.universalMarks) {
+        if (m.pageNum <= pages.length) {
+          const page = pages[m.pageNum - 1];
+          const pHeight = page.getHeight();
+          page.drawText('X', {
+            x: m.xPt - 4,
+            y: pHeight - (m.yRatio * pHeight) - 4,
+            size: 11,
+            color: BLACK
+          });
+        }
+      }
+
+      for (const t of formState.universalTexts) {
+        if (t.val && t.pageNum <= pages.length) {
+          const page = pages[t.pageNum - 1];
+          const pHeight = page.getHeight();
+          page.drawText(t.val, {
+            x: t.xPt,
+            y: pHeight - (t.yRatio * pHeight) - 3,
+            size: 10,
+            color: BLACK
+          });
+        }
+      }
+
+      for (const s of formState.universalSigs) {
+        if (s.pageNum <= pages.length) {
+          const page = pages[s.pageNum - 1];
+          const pHeight = page.getHeight();
+          await embedSig(page, s.dataUrl, s.xPt - (s.wPt / 2), pHeight - (s.yRatio * pHeight) - (s.hPt / 2), s.wPt, s.hPt);
+        }
+      }
+
+      return await pdf.save();
+    }
+
     async function saveOfficialPDF() {
       if (!currentBuffer) {
         alert("Please open a PDF document first by tapping 'OPEN PDF'.");
@@ -1437,158 +1625,61 @@ const FT01_FORM_PAGES = {
       }
       try {
         updateStatus("Generating signed PDF...");
-        const pdf = await PDFLib.PDFDocument.load(currentBuffer);
-        const pages = pdf.getPages();
-        const BLACK = PDFLib.rgb(0, 0, 0);
-
-        async function embedSig(page, dataUrl, x, y, w, h) {
-          try {
-            const pngImage = await pdf.embedPng(dataUrl);
-            page.drawImage(pngImage, { x, y, width: w, height: h });
-          } catch (e) {
-            console.error("Signature embed error:", e);
-          }
-        }
-
-        if (isCurrentDocFT01 && typeof FT01_FORM_PAGES !== 'undefined') {
-          for (let pNum = 1; pNum <= pages.length; pNum++) {
-            const pDef = FT01_FORM_PAGES[pNum];
-            if (!pDef) continue;
-            const page = pages[pNum - 1];
-
-            if (pDef.checkboxes) {
-              pDef.checkboxes.forEach(b => {
-                if (formState.checkboxes[b.id]) {
-                  page.drawText('X', {
-                    x: b.x + (b.w / 2) - 4,
-                    y: b.y + (b.h / 2) - 4,
-                    size: 11,
-                    color: BLACK
-                  });
-                }
-              });
-            }
-
-            if (pDef.textFields) {
-              pDef.textFields.forEach(f => {
-                const val = formState.textValues[f.id];
-                if (val) {
-                  page.drawText(val, {
-                    x: f.x + 2,
-                    y: f.y + (f.isTextarea ? f.h - 10 : 2),
-                    size: 9.5,
-                    color: BLACK
-                  });
-                }
-              });
-            }
-
-            if (pDef.rows && pDef.tableCols) {
-              pDef.rows.forEach(row => {
-                const grade = formState.tableGrades[row.code];
-                if (grade) {
-                  const col = pDef.tableCols.find(c => c.name === grade);
-                  if (col) {
-                    page.drawText(grade, {
-                      x: col.x + (col.w / 2) - (grade.length > 1 ? 5 : 3),
-                      y: row.y + (row.h / 2) - 3,
-                      size: grade.length > 2 ? 6.5 : 8,
-                      color: BLACK
-                    });
-                  }
-                }
-              });
-            }
-
-            if (pDef.comportementRows && pDef.comportementCols) {
-              pDef.comportementRows.forEach(row => {
-                const grade = formState.tableGrades[row.code];
-                if (grade) {
-                  const col = pDef.comportementCols.find(c => c.name === grade);
-                  if (col) {
-                    page.drawText(grade, {
-                      x: col.x + (col.w / 2) - 3,
-                      y: row.y + (row.h / 2) - 3,
-                      size: 7.5,
-                      color: BLACK
-                    });
-                  }
-                }
-              });
-            }
-
-            if (pDef.crmRows && pDef.crmCols) {
-              pDef.crmRows.forEach(row => {
-                const grade = formState.tableGrades['CRM_' + row.code];
-                if (grade) {
-                  const col = pDef.crmCols.find(c => c.name === grade);
-                  if (col) {
-                    page.drawText(grade, {
-                      x: col.x + (col.w / 2) - 3,
-                      y: row.y + (row.h / 2) - 3,
-                      size: 8,
-                      color: BLACK
-                    });
-                  }
-                }
-              });
-            }
-
-            if (pDef.signatures) {
-              for (const s of pDef.signatures) {
-                if (formState.signatures[s.id]) {
-                  await embedSig(page, formState.signatures[s.id], s.x, s.y, s.w, s.h);
-                }
-              }
-            }
-          }
-        }
-
-        for (const m of formState.universalMarks) {
-          if (m.pageNum <= pages.length) {
-            const page = pages[m.pageNum - 1];
-            const pHeight = page.getHeight();
-            page.drawText('X', {
-              x: m.xPt - 4,
-              y: pHeight - (m.yRatio * pHeight) - 4,
-              size: 11,
-              color: BLACK
-            });
-          }
-        }
-
-        for (const t of formState.universalTexts) {
-          if (t.val && t.pageNum <= pages.length) {
-            const page = pages[t.pageNum - 1];
-            const pHeight = page.getHeight();
-            page.drawText(t.val, {
-              x: t.xPt,
-              y: pHeight - (t.yRatio * pHeight) - 3,
-              size: 10,
-              color: BLACK
-            });
-          }
-        }
-
-        for (const s of formState.universalSigs) {
-          if (s.pageNum <= pages.length) {
-            const page = pages[s.pageNum - 1];
-            const pHeight = page.getHeight();
-            await embedSig(page, s.dataUrl, s.xPt - (s.wPt / 2), pHeight - (s.yRatio * pHeight) - (s.hPt / 2), s.wPt, s.hPt);
-          }
-        }
-
-        const savedBytes = await pdf.save();
+        const savedBytes = await generateFinalPdfBytes();
         const blob = new Blob([savedBytes], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = (currentFileName ? currentFileName.replace(/\.pdf$/i, '') : 'Document') + '_Signed.pdf';
+        const name = (currentFileName ? currentFileName.replace(/\.pdf$/i, '') : 'Document') + '_Signed.pdf';
+        link.download = name;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         updateStatus("PDF downloaded successfully!");
       } catch (err) {
         console.error("Export error:", err);
         updateStatus("Export error: " + err.message, true);
         alert("Export error: " + err.message);
+      }
+    }
+
+    async function printOfficialPDF() {
+      if (!currentBuffer) {
+        alert("Please open a PDF document first by tapping 'OPEN PDF'.");
+        return;
+      }
+      try {
+        updateStatus("Preparing print document...");
+        const savedBytes = await generateFinalPdfBytes();
+        const blob = new Blob([savedBytes], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        let printFrame = document.getElementById('pdf-print-frame');
+        if (!printFrame) {
+          printFrame = document.createElement('iframe');
+          printFrame.id = 'pdf-print-frame';
+          printFrame.style.position = 'fixed';
+          printFrame.style.right = '0';
+          printFrame.style.bottom = '0';
+          printFrame.style.width = '0';
+          printFrame.style.height = '0';
+          printFrame.style.border = '0';
+          document.body.appendChild(printFrame);
+        }
+        printFrame.src = blobUrl;
+        printFrame.onload = function() {
+          setTimeout(() => {
+            try {
+              printFrame.contentWindow.focus();
+              printFrame.contentWindow.print();
+              updateStatus("Print preview ready.");
+            } catch (e) {
+              window.print();
+            }
+          }, 300);
+        };
+      } catch (err) {
+        console.error("Print error:", err);
+        window.print();
       }
     }
   </script>
