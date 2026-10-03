@@ -231,6 +231,54 @@
       color: #000000 !important;
     }
 
+    /* Number of Simulations in-cell input */
+    .exact-sim-input {
+      position: absolute; pointer-events: auto; z-index: 20;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      color: #000000 !important;
+      text-align: center;
+      padding: 0;
+      outline: none;
+      box-sizing: border-box;
+      transition: all 0.12s ease;
+    }
+    .exact-sim-input:focus {
+      background: #ffffff;
+      border: 1.5px solid var(--casa-green);
+      box-shadow: 0 0 0 2px rgba(11, 102, 59, 0.25);
+    }
+    .exact-sim-input:hover {
+      background: rgba(11, 102, 59, 0.08);
+      border-color: var(--casa-green);
+    }
+
+    /* Simulation badge over table */
+    .sim-table-badge {
+      position: absolute; pointer-events: auto; z-index: 25;
+      background: #111111;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: transform 0.1s ease, background 0.1s ease;
+    }
+    .sim-table-badge:hover { background: var(--casa-green); transform: scale(1.03); }
+    .sim-table-badge:active { transform: scale(0.97); }
+
     /* Text Inputs */
     .exact-text-input {
       position: absolute; pointer-events: auto;
@@ -305,22 +353,33 @@
     }
     .univ-mark:active { background: rgba(0, 0, 0, 0.1); }
 
+    /* Compact, Auto-Sizing Universal Text Input */
     .univ-text-wrap {
       position: absolute; transform: translateY(-50%);
       z-index: 25; pointer-events: auto;
+      display: inline-flex; align-items: center;
     }
     .univ-text-input {
-      background: rgba(255, 255, 255, 0.92);
-      border: none;
-      border-bottom: 1.5px solid #000000;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1.5px solid #222222;
+      border-radius: 3px;
       font-family: inherit;
       font-size: 11px;
       font-weight: 700;
       color: #000000 !important;
       outline: none;
       padding: 1px 4px;
-      min-width: 120px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      min-width: 22px;
+      max-width: 280px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      box-sizing: content-box;
+      transition: width 0.1s ease;
+    }
+    .univ-text-input:focus {
+      border-color: var(--casa-green);
+      background: #ffffff;
+      box-shadow: 0 0 0 2px rgba(11, 102, 59, 0.25);
     }
 
     .univ-sig-stamp {
@@ -339,30 +398,30 @@
     }
 
     /* SIGNATURE MODAL */
-    .signature-modal-backdrop {
-      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+    .signature-modal-backdrop, .sim-modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72);
       z-index: 1000; align-items: center; justify-content: center;
       padding: 12px;
     }
-    .signature-modal-backdrop.open { display: flex; }
+    .signature-modal-backdrop.open, .sim-modal-backdrop.open { display: flex; }
 
-    .signature-card {
-      background: #ffffff; width: 100%; max-width: 420px; border-radius: 10px;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+    .signature-card, .sim-modal-card {
+      background: #ffffff; width: 100%; max-width: 440px; border-radius: 10px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
       overflow: hidden;
     }
 
-    .sig-modal-header {
+    .sig-modal-header, .sim-modal-header {
       background: #111111; color: white; padding: 12px 16px;
       display: flex; align-items: center; justify-content: space-between;
       font-weight: 700; font-size: 0.88rem;
     }
-    .sig-modal-close {
+    .sig-modal-close, .sim-modal-close {
       background: transparent; border: none; color: white; font-size: 1.4rem;
       cursor: pointer; line-height: 1; padding: 4px;
     }
 
-    .sig-modal-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .sig-modal-body, .sim-modal-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 
     .signature-canvas-wrap {
       border: 2px solid #222; border-radius: 6px; background: #fafafa;
@@ -374,7 +433,30 @@
       border-bottom: 1px dashed #bbb; pointer-events: none;
     }
 
-    .sig-actions-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .sig-actions-row, .sim-actions-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+
+    /* SIMULATION STEPPER ROWS */
+    .sim-maneuver-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px; background: #f6f9f7; border: 1px solid #d9e6df;
+      border-radius: 6px; gap: 8px;
+    }
+    .sim-m-name { font-weight: 700; font-size: 0.82rem; color: #1a2e22; min-width: 105px; }
+    .sim-steppers-group { display: flex; align-items: center; gap: 8px; }
+    .sim-sub-item { display: flex; align-items: center; gap: 3px; }
+    .sim-tag { font-size: 0.72rem; font-weight: 800; color: #496353; background: #e2ece5; padding: 2px 4px; border-radius: 3px; min-width: 25px; text-align: center; }
+    .stepper-box { display: flex; align-items: center; border: 1px solid #aaa; border-radius: 4px; overflow: hidden; background: white; }
+    .step-btn {
+      width: 26px; height: 26px; border: none; background: #eee; font-weight: 800;
+      font-size: 13px; cursor: pointer; color: #111; display: flex; align-items: center; justify-content: center;
+      user-select: none;
+    }
+    .step-btn:active { background: #ccc; }
+    .step-val {
+      width: 28px; height: 26px; border: none; text-align: center; font-weight: 800;
+      font-size: 12px; color: #000; outline: none; -moz-appearance: textfield;
+    }
+    .step-val::-webkit-outer-spin-button, .step-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
     /* CLEAN PRINT STYLING */
     @media print {
@@ -384,7 +466,7 @@
         overflow: visible !important;
         background: #ffffff !important;
       }
-      .app-toolbar, #status-banner, .signature-modal-backdrop, .empty-state-card, #btn-open-label {
+      .app-toolbar, #status-banner, .signature-modal-backdrop, .sim-modal-backdrop, .empty-state-card, #btn-open-label, .sim-table-badge {
         display: none !important;
       }
       .pdf-scroll-viewport {
@@ -411,10 +493,8 @@
     
     <!-- Top Row: File Open, Mode Switcher, Save PDF -->
     <div class="toolbar-row-main">
-      <!-- Hidden file input styled safely offscreen without pointer-events:none -->
       <input type="file" id="pdf-file-input" accept="application/pdf,.pdf" style="position:fixed; top:-9999px; left:-9999px; opacity:0;" />
       
-      <!-- Native label for 100% reliable touch click on iOS / Android -->
       <label for="pdf-file-input" class="btn-green" id="btn-open-label" title="Open any PDF document">
         <i class="fa-solid fa-plus"></i> OPEN PDF
       </label>
@@ -444,6 +524,9 @@
       </div>
 
       <div style="display:flex; align-items:center; gap:6px;">
+        <button class="btn-green" id="btn-quick-sim" style="display:none; padding:5px 9px; font-size:0.75rem;" onclick="openActiveSimModal()">
+          <i class="fa-solid fa-calculator"></i> SIMS
+        </button>
         <button class="btn-white" onclick="changeZoom(-0.15)">-</button>
         <span id="zoom-value" style="font-weight:700; font-size:0.78rem;">100%</span>
         <button class="btn-white" onclick="changeZoom(0.15)">+</button>
@@ -501,7 +584,171 @@
     </div>
   </div>
 
-  <!-- 1. INLINED PDF.JS WORKER (Sets window.pdfjsWorker for in-thread zero-worker operation) -->
+  <!-- Dedicated Touch Assistant for Number of Simulations -->
+  <div class="sim-modal-backdrop" id="sim-modal">
+    <div class="sim-modal-card">
+      <div class="sim-modal-header">
+        <span><i class="fa-solid fa-plane-departure"></i> NUMBER OF SIMULATIONS</span>
+        <button class="sim-modal-close" onclick="closeSimulationsModal()">&times;</button>
+      </div>
+      <div class="sim-modal-body">
+        <div style="font-size:0.8rem; color:var(--text-muted);">
+          Set simulation counts easily with touch steppers:
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <!-- T/O -->
+          <div class="sim-maneuver-row">
+            <div class="sim-m-name">Takeoff (T/O)</div>
+            <div class="sim-steppers-group">
+              <div class="sim-sub-item">
+                <span class="sim-tag">N-1</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('to_n1', -1)">-</button>
+                  <input type="number" id="step_inp_to_n1" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('to_n1', 1)">+</button>
+                </div>
+              </div>
+              <div class="sim-sub-item">
+                <span class="sim-tag">N</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('to_n', -1)">-</button>
+                  <input type="number" id="step_inp_to_n" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('to_n', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LDG -->
+          <div class="sim-maneuver-row">
+            <div class="sim-m-name">Landing (LDG)</div>
+            <div class="sim-steppers-group">
+              <div class="sim-sub-item">
+                <span class="sim-tag">N-1</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('ldg_n1', -1)">-</button>
+                  <input type="number" id="step_inp_ldg_n1" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('ldg_n1', 1)">+</button>
+                </div>
+              </div>
+              <div class="sim-sub-item">
+                <span class="sim-tag">N</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('ldg_n', -1)">-</button>
+                  <input type="number" id="step_inp_ldg_n" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('ldg_n', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GA -->
+          <div class="sim-maneuver-row">
+            <div class="sim-m-name">Go Around (GA)</div>
+            <div class="sim-steppers-group">
+              <div class="sim-sub-item">
+                <span class="sim-tag">N-1</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('ga_n1', -1)">-</button>
+                  <input type="number" id="step_inp_ga_n1" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('ga_n1', 1)">+</button>
+                </div>
+              </div>
+              <div class="sim-sub-item">
+                <span class="sim-tag">N</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('ga_n', -1)">-</button>
+                  <input type="number" id="step_inp_ga_n" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('ga_n', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PA -->
+          <div class="sim-maneuver-row">
+            <div class="sim-m-name">Precision App (PA)</div>
+            <div class="sim-steppers-group">
+              <div class="sim-sub-item">
+                <span class="sim-tag">N-1</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('pa_n1', -1)">-</button>
+                  <input type="number" id="step_inp_pa_n1" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('pa_n1', 1)">+</button>
+                </div>
+              </div>
+              <div class="sim-sub-item">
+                <span class="sim-tag">N</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('pa_n', -1)">-</button>
+                  <input type="number" id="step_inp_pa_n" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('pa_n', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NPA -->
+          <div class="sim-maneuver-row">
+            <div class="sim-m-name">Non-Prec App (NPA)</div>
+            <div class="sim-steppers-group">
+              <div class="sim-sub-item">
+                <span class="sim-tag">N-1</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('npa_n1', -1)">-</button>
+                  <input type="number" id="step_inp_npa_n1" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('npa_n1', 1)">+</button>
+                </div>
+              </div>
+              <div class="sim-sub-item">
+                <span class="sim-tag">N</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('npa_n', -1)">-</button>
+                  <input type="number" id="step_inp_npa_n" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('npa_n', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual -->
+          <div class="sim-maneuver-row">
+            <div class="sim-m-name">Visual App</div>
+            <div class="sim-steppers-group">
+              <div class="sim-sub-item">
+                <span class="sim-tag">N-1</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('vis_n1', -1)">-</button>
+                  <input type="number" id="step_inp_vis_n1" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('vis_n1', 1)">+</button>
+                </div>
+              </div>
+              <div class="sim-sub-item">
+                <span class="sim-tag">N</span>
+                <div class="stepper-box">
+                  <button type="button" class="step-btn" onclick="stepSimValue('vis_n', -1)">-</button>
+                  <input type="number" id="step_inp_vis_n" class="step-val" value="0" min="0" max="99" />
+                  <button type="button" class="step-btn" onclick="stepSimValue('vis_n', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-actions-row" style="margin-top:6px;">
+          <button class="btn-white" onclick="resetSimModalInputs()">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+          <button class="btn-green" onclick="applySimModalInputs()">
+            <i class="fa-solid fa-check"></i> Apply to Document
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. INLINED PDF.JS WORKER -->
   <script>
     /**
  * @licstart The following is the entire license notice for the
@@ -851,7 +1098,6 @@ const FT01_FORM_PAGES = {
 };
 
 
-    // Disable worker URL requirement since in-thread FakeWorker is loaded via window.pdfjsWorker
     try {
       if (typeof pdfjsLib !== 'undefined') {
         pdfjsLib.GlobalWorkerOptions.workerSrc = '';
@@ -864,15 +1110,23 @@ const FT01_FORM_PAGES = {
     let pdfDocument = null;
     let currentScale = 1.0;
     let isUserScaleSet = false;
-    let currentMode = 'check'; // 'check' | 'text' | 'sign'
+    let currentMode = 'check';
     let isCurrentDocFT01 = false;
     let currentFileName = '';
+    let detectedSimPages = {};
+    let activeSimPageNum = null;
+
+    const SIM_KEYS = [
+      'to_n1', 'to_n', 'ldg_n1', 'ldg_n', 'ga_n1', 'ga_n',
+      'pa_n1', 'pa_n', 'npa_n1', 'npa_n', 'vis_n1', 'vis_n'
+    ];
 
     let formState = {
       checkboxes: {},
       tableGrades: {},
       textValues: {},
       signatures: {},
+      simulations: {}, // pageNum -> { key: { val: '1', x, y, w, h } }
       universalMarks: [],
       universalTexts: [],
       universalSigs: []
@@ -909,16 +1163,20 @@ const FT01_FORM_PAGES = {
         tableGrades: {},
         textValues: {},
         signatures: {},
+        simulations: {},
         universalMarks: [],
         universalTexts: [],
         universalSigs: []
       };
+      detectedSimPages = {};
+      document.getElementById('btn-quick-sim').style.display = 'none';
     }
 
     function showEmptyState() {
       currentBuffer = null;
       pdfDocument = null;
       currentFileName = '';
+      clearFormStateOnly();
       document.getElementById('doc-title').textContent = 'No document selected';
       document.getElementById('pdf-pages-wrap').innerHTML = `
         <div class="empty-state-card" id="empty-state">
@@ -934,7 +1192,6 @@ const FT01_FORM_PAGES = {
       `;
     }
 
-    // 100% BULLETPROOF MOBILE FILE PICKER
     const fileInput = document.getElementById('pdf-file-input');
     fileInput.addEventListener('change', async function(e) {
       const files = e.target.files;
@@ -977,29 +1234,24 @@ const FT01_FORM_PAGES = {
         let uint8Data;
         if (input instanceof Uint8Array) {
           uint8Data = input;
-          // Store cloned copy to prevent detachment
           currentBuffer = input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength);
         } else if (input instanceof ArrayBuffer) {
           uint8Data = new Uint8Array(input);
-          // Clone the arrayBuffer so it remains in memory forever
           currentBuffer = input.slice(0);
         } else {
           throw new Error("Invalid PDF data type");
         }
 
-        // Reset form data without resetting currentBuffer
         clearFormStateOnly();
 
         const doc = await pdfjsLib.getDocument({ data: uint8Data }).promise;
         pdfDocument = doc;
 
-        // Determine if document is FT 01
         const upperName = (fileName || '').toUpperCase();
         isCurrentDocFT01 = (doc.numPages === 6) && (upperName.includes('FT01') || upperName.includes('FT 01') || upperName.includes('REVISION'));
 
         document.getElementById('doc-title').textContent = fileName || 'Document.pdf';
         
-        // Auto-scale on first load to fit screen
         if (!isUserScaleSet) {
           const firstPage = await doc.getPage(1);
           const vp = firstPage.getViewport({ scale: 1.0 });
@@ -1032,7 +1284,7 @@ const FT01_FORM_PAGES = {
     }
 
     function renderSinglePage(num, container) {
-      pdfDocument.getPage(num).then(page => {
+      pdfDocument.getPage(num).then(async (page) => {
         const viewport = page.getViewport({ scale: currentScale });
 
         const sheet = document.createElement('div');
@@ -1058,13 +1310,183 @@ const FT01_FORM_PAGES = {
 
         container.appendChild(sheet);
 
-        page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise.then(() => {
-          if (isCurrentDocFT01 && typeof FT01_FORM_PAGES !== 'undefined') {
-            injectStructuredFields(num, fieldLayer);
-          }
-          renderUniversalItems(num, sheet);
-        });
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+        if (isCurrentDocFT01 && typeof FT01_FORM_PAGES !== 'undefined') {
+          injectStructuredFields(num, fieldLayer);
+        }
+
+        // Auto-detect and inject interactive Number of Simulations fields
+        await detectAndInjectSimulationsTable(num, fieldLayer, page);
+
+        renderUniversalItems(num, sheet);
       });
+    }
+
+    async function detectAndInjectSimulationsTable(pageNum, layer, page) {
+      try {
+        const textContent = await page.getTextContent();
+        let hasSimTable = false;
+        let toItem = null;
+        let simItem = null;
+
+        for (const item of textContent.items) {
+          const str = item.str.trim();
+          if (str === 'T/O') toItem = item;
+          if (str.includes('simulations') || str.includes('Simulations')) simItem = item;
+        }
+
+        if (simItem && toItem) {
+          hasSimTable = true;
+          detectedSimPages[pageNum] = true;
+          document.getElementById('btn-quick-sim').style.display = 'inline-flex';
+          activeSimPageNum = pageNum;
+
+          const toX = toItem.transform[4];
+          const isTemplateB = toX < 200;
+
+          // Define 12 cells coordinates based on detected layout template
+          const cellsDef = isTemplateB ? [
+            { key: 'to_n1', x: 157.2, y: 449.7, w: 38.4, h: 25.3 },
+            { key: 'to_n', x: 197.1, y: 449.7, w: 34.0, h: 25.3 },
+            { key: 'ldg_n1', x: 232.5, y: 449.7, w: 33.6, h: 25.3 },
+            { key: 'ldg_n', x: 267.7, y: 449.7, w: 33.2, h: 25.3 },
+            { key: 'ga_n1', x: 302.4, y: 449.7, w: 33.1, h: 25.3 },
+            { key: 'ga_n', x: 336.9, y: 449.7, w: 33.0, h: 25.3 },
+            { key: 'pa_n1', x: 371.5, y: 449.7, w: 33.0, h: 25.3 },
+            { key: 'pa_n', x: 406.1, y: 449.7, w: 32.9, h: 25.3 },
+            { key: 'npa_n1', x: 440.5, y: 449.7, w: 33.6, h: 25.3 },
+            { key: 'npa_n', x: 475.7, y: 449.7, w: 33.4, h: 25.3 },
+            { key: 'vis_n1', x: 510.5, y: 449.7, w: 32.9, h: 25.3 },
+            { key: 'vis_n', x: 544.9, y: 449.7, w: 32.0, h: 25.3 }
+          ] : [
+            { key: 'to_n1', x: 182.4, y: 455.0, w: 37.6, h: 25.3 },
+            { key: 'to_n', x: 221.6, y: 455.0, w: 33.0, h: 25.3 },
+            { key: 'ldg_n1', x: 256.1, y: 455.0, w: 33.0, h: 25.3 },
+            { key: 'ldg_n', x: 290.6, y: 455.0, w: 32.5, h: 25.3 },
+            { key: 'ga_n1', x: 324.6, y: 455.0, w: 32.5, h: 25.3 },
+            { key: 'ga_n', x: 358.6, y: 455.0, w: 32.2, h: 25.3 },
+            { key: 'pa_n1', x: 392.3, y: 455.0, w: 32.5, h: 25.3 },
+            { key: 'pa_n', x: 426.3, y: 455.0, w: 32.2, h: 25.3 },
+            { key: 'npa_n1', x: 459.9, y: 455.0, w: 33.1, h: 25.3 },
+            { key: 'npa_n', x: 494.5, y: 455.0, w: 32.6, h: 25.3 },
+            { key: 'vis_n1', x: 528.6, y: 455.0, w: 32.9, h: 25.3 },
+            { key: 'vis_n', x: 562.9, y: 455.0, w: 17.6, h: 25.3 }
+          ];
+
+          if (!formState.simulations[pageNum]) {
+            formState.simulations[pageNum] = {};
+          }
+
+          // Inject quick interactive badge over table label
+          const badgePos = toPercent(isTemplateB ? 22 : 48, (isTemplateB ? 449.7 : 455.0) + 28, 120, 20);
+          const badge = document.createElement('button');
+          badge.className = 'sim-table-badge';
+          badge.innerHTML = '<i class="fa-solid fa-calculator"></i> Fill Simulations';
+          badge.style.left = badgePos.left;
+          badge.style.top = badgePos.top;
+          badge.onclick = (e) => {
+            e.stopPropagation();
+            openSimulationsModal(pageNum);
+          };
+          layer.appendChild(badge);
+
+          // Inject 12 interactive cell inputs
+          cellsDef.forEach(c => {
+            const pos = toPercent(c.x, c.y, c.w, c.h);
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.inputMode = 'numeric';
+            inp.pattern = '[0-9]*';
+            inp.className = 'exact-sim-input';
+            inp.id = `sim_${pageNum}_${c.key}`;
+            inp.style.left = pos.left;
+            inp.style.top = pos.top;
+            inp.style.width = pos.width;
+            inp.style.height = pos.height;
+
+            const existing = formState.simulations[pageNum][c.key];
+            inp.value = existing ? existing.val : '';
+
+            inp.oninput = () => {
+              formState.simulations[pageNum][c.key] = {
+                val: inp.value,
+                x: c.x, y: c.y, w: c.w, h: c.h
+              };
+            };
+
+            inp.onclick = (e) => {
+              e.stopPropagation();
+            };
+
+            layer.appendChild(inp);
+          });
+        }
+      } catch (err) {
+        console.warn("Sim detection error on page", pageNum, err);
+      }
+    }
+
+    function openActiveSimModal() {
+      const pageNum = activeSimPageNum || 1;
+      openSimulationsModal(pageNum);
+    }
+
+    function openSimulationsModal(pageNum) {
+      activeSimPageNum = pageNum;
+      if (!formState.simulations[pageNum]) {
+        formState.simulations[pageNum] = {};
+      }
+      const pageSims = formState.simulations[pageNum];
+
+      SIM_KEYS.forEach(key => {
+        const inp = document.getElementById(`step_inp_${key}`);
+        if (inp) {
+          inp.value = (pageSims[key] && pageSims[key].val !== '') ? pageSims[key].val : '0';
+        }
+      });
+
+      document.getElementById('sim-modal').classList.add('open');
+    }
+
+    function closeSimulationsModal() {
+      document.getElementById('sim-modal').classList.remove('open');
+    }
+
+    function stepSimValue(key, delta) {
+      const inp = document.getElementById(`step_inp_${key}`);
+      if (!inp) return;
+      let val = parseInt(inp.value, 10) || 0;
+      val = Math.max(0, Math.min(99, val + delta));
+      inp.value = val;
+    }
+
+    function resetSimModalInputs() {
+      SIM_KEYS.forEach(key => {
+        const inp = document.getElementById(`step_inp_${key}`);
+        if (inp) inp.value = '0';
+      });
+    }
+
+    function applySimModalInputs() {
+      if (!activeSimPageNum) return;
+      if (!formState.simulations[activeSimPageNum]) {
+        formState.simulations[activeSimPageNum] = {};
+      }
+
+      SIM_KEYS.forEach(key => {
+        const stepInp = document.getElementById(`step_inp_${key}`);
+        const val = stepInp ? (stepInp.value === '0' ? '' : stepInp.value) : '';
+        
+        const cellInp = document.getElementById(`sim_${activeSimPageNum}_${key}`);
+        if (cellInp) {
+          cellInp.value = val;
+          cellInp.dispatchEvent(new Event('input'));
+        }
+      });
+
+      closeSimulationsModal();
+      updateStatus("Simulations applied successfully!");
     }
 
     function injectStructuredFields(pageNum, layer) {
@@ -1301,7 +1723,16 @@ const FT01_FORM_PAGES = {
       inp.className = 'univ-text-input';
       inp.value = item.val || '';
 
-      inp.oninput = () => { item.val = inp.value; };
+      const updateWidth = () => {
+        const len = Math.max(1, inp.value.length);
+        inp.style.width = Math.max(22, (len * 8) + 10) + 'px';
+      };
+      updateWidth();
+
+      inp.oninput = () => {
+        item.val = inp.value;
+        updateWidth();
+      };
       inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
       inp.onblur = () => {
         if (!inp.value.trim()) {
@@ -1452,6 +1883,7 @@ const FT01_FORM_PAGES = {
       document.querySelectorAll('.exact-box').forEach(b => b.classList.remove('checked'));
       document.querySelectorAll('.exact-table-cell').forEach(c => c.classList.remove('selected'));
       document.querySelectorAll('.exact-text-input, .exact-textarea').forEach(i => i.value = '');
+      document.querySelectorAll('.exact-sim-input').forEach(i => i.value = '');
       document.querySelectorAll('.exact-signature-zone').forEach(s => {
         s.classList.remove('signed');
         s.innerHTML = `<span class="sig-label-hint"><i class="fa-solid fa-pen-nib"></i> Sign</span>`;
@@ -1472,7 +1904,6 @@ const FT01_FORM_PAGES = {
         throw new Error("No PDF document currently loaded.");
       }
       
-      // Clone buffer copy as Uint8Array so PDFLib can read it safely without lock
       const bufferCopy = new Uint8Array(currentBuffer.slice(0));
       const pdf = await PDFLib.PDFDocument.load(bufferCopy);
       const pages = pdf.getPages();
@@ -1576,6 +2007,26 @@ const FT01_FORM_PAGES = {
               if (formState.signatures[s.id]) {
                 await embedSig(page, formState.signatures[s.id], s.x, s.y, s.w, s.h);
               }
+            }
+          }
+        }
+      }
+
+      // Burn simulation counts
+      for (const pNumStr in formState.simulations) {
+        const pNum = parseInt(pNumStr, 10);
+        if (pNum <= pages.length) {
+          const page = pages[pNum - 1];
+          const pageSims = formState.simulations[pNum];
+          for (const key in pageSims) {
+            const c = pageSims[key];
+            if (c && c.val !== '' && c.val !== undefined) {
+              page.drawText(String(c.val), {
+                x: c.x + (c.w / 2) - 3.5,
+                y: c.y + (c.h / 2) - 4,
+                size: 11,
+                color: BLACK
+              });
             }
           }
         }
